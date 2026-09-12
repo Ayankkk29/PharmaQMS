@@ -261,32 +261,124 @@ def node_detect_duplicates(state: ComplaintState) -> Dict[str, Any]:
     logger.info(f"[LangGraph Node 5] Screened duplicate candidates ({len(candidates)} matches)")
     return {"duplicate_candidates": candidates}
 
-# --- Node 6: Investigation Recommendation (AI Recommendation) ---
+# --- Node 6: Investigation Recommendation (LLM Structured Recommendation) ---
 def node_recommend_investigation(state: ComplaintState) -> Dict[str, Any]:
     ext = state.get("extracted_complaint", {})
     risk = state.get("risk_assessment", {})
+    client = get_groq_client()
     
     prod = ext.get("product_name", "Pharmaceutical Product")
     batch = ext.get("batch_number", "Affected Lot")
     defect = ext.get("complaint_description", "")
+    risk_lvl = risk.get("risk_level", "MEDIUM")
+
+    if client:
+        try:
+            prompt = f"""You are a Senior Pharmaceutical Quality Assurance Investigator.
+Based on the extracted complaint details and ICH Q9 Risk Assessment below, generate a 3-step 5-Whys Root Cause Investigation Roadmap.
+
+Product: {prod}
+Batch: {batch}
+Defect: {defect}
+Risk Level: {risk_lvl}
+
+Return raw JSON object:
+{{
+  "plan": [
+    "Step 1...",
+    "Step 2...",
+    "Step 3..."
+  ],
+  "summary": "Summary string of investigation roadmap"
+}}"""
+            response = client.chat.completions.create(
+                model=settings.PRIMARY_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are a pharma QA AI assistant outputting structured investigation roadmaps in raw JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1,
+                response_format={"type": "json_object"}
+            )
+            parsed = json.loads(response.choices[0].message.content)
+            plan = parsed.get("plan", [])
+            summary = parsed.get("summary", "\n".join(plan))
+            logger.info("[LangGraph Node 6] Groq LLM generated dynamic investigation roadmap.")
+            return {"investigation_recommendation": {"plan": plan, "summary": summary}}
+        except Exception as e:
+            logger.warning(f"[LangGraph Node 6] Groq investigation recommendation failed ({e}); using domain rules fallback.")
     
     plan = [
-        f"1. Perform 5-Whys root cause analysis on batch execution record (BER) for {batch}.",
+        f"1. Perform 5-Whys root cause analysis on batch execution record (BER) for lot {batch}.",
         f"2. Conduct chemical / physical retain sample testing for {prod}.",
         "3. Review environmental control logs and equipment calibration parameters."
     ]
     
     rec_text = "\n".join(plan)
-    logger.info("[LangGraph Node 6] Generated investigation roadmap recommendation.")
+    logger.info("[LangGraph Node 6] Generated fallback investigation roadmap recommendation.")
     return {"investigation_recommendation": {"plan": plan, "summary": rec_text}}
 
-# --- Node 7: CAPA Recommendation (AI Recommendation) ---
+# --- Node 7: CAPA Recommendation (LLM Structured Recommendation) ---
 def node_recommend_capa(state: ComplaintState) -> Dict[str, Any]:
     ext = state.get("extracted_complaint", {})
     risk = state.get("risk_assessment", {})
+    client = get_groq_client()
     
     prod = ext.get("product_name", "Pharmaceutical Product")
     batch = ext.get("batch_number", "Affected Lot")
+    defect = ext.get("complaint_description", "")
+    risk_lvl = risk.get("risk_level", "MEDIUM")
+
+    if client:
+        try:
+            prompt = f"""You are a Pharmaceutical Quality Assurance Manager.
+Based on the extracted complaint details and ICH Q9 Risk Assessment below, recommend immediate containment, corrective action, and preventive action (CAPA).
+
+Product: {prod}
+Batch: {batch}
+Defect: {defect}
+Risk Level: {risk_lvl}
+
+Return raw JSON object:
+{{
+  "immediate_containment": [
+    "Containment action 1...",
+    "Containment action 2...",
+    "Containment action 3..."
+  ],
+  "corrective_action": "Detailed corrective action string",
+  "preventive_action": "Detailed preventive action string"
+}}"""
+            response = client.chat.completions.create(
+                model=settings.PRIMARY_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are a pharma QA AI assistant outputting structured CAPA recommendations in raw JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1,
+                response_format={"type": "json_object"}
+            )
+            parsed = json.loads(response.choices[0].message.content)
+            containment = parsed.get("immediate_containment", [])
+            corrective = parsed.get("corrective_action", "")
+            preventive = parsed.get("preventive_action", "")
+            logger.info("[LangGraph Node 7] Groq LLM generated dynamic CAPA recommendations.")
+            return {
+                "capa_recommendation": {
+                    "immediate_containment": containment,
+                    "corrective_action": corrective,
+                    "preventive_action": preventive,
+                    "containment_actions": containment,
+                    "recommended_capa": corrective,
+                    "root_cause_investigation_plan": [
+                        f"1. Perform 5-Whys root cause analysis on batch execution record (BER) for lot {batch}.",
+                        f"2. Conduct chemical / physical retain sample testing for {prod}.",
+                        "3. Review environmental control logs and equipment calibration parameters."
+                    ]
+                }
+            }
+        except Exception as e:
+            logger.warning(f"[LangGraph Node 7] Groq CAPA recommendation failed ({e}); using domain rules fallback.")
     
     containment = [
         f"Immediately quarantine batch {batch} across all distribution warehouses.",
@@ -297,7 +389,7 @@ def node_recommend_capa(state: ComplaintState) -> Dict[str, Any]:
     capa_text = f"Execute root cause investigation for {prod}. Update SOP and retrain packaging/manufacturing technicians."
     prev_text = "Implement automated inline vision inspection / PAT sensor monitoring to prevent recurrence."
 
-    logger.info("[LangGraph Node 7] Generated CAPA recommendation.")
+    logger.info("[LangGraph Node 7] Generated fallback CAPA recommendation.")
     return {
         "capa_recommendation": {
             "immediate_containment": containment,
@@ -306,7 +398,7 @@ def node_recommend_capa(state: ComplaintState) -> Dict[str, Any]:
             "containment_actions": containment,
             "recommended_capa": capa_text,
             "root_cause_investigation_plan": [
-                f"1. Perform 5-Whys root cause analysis on batch execution record (BER) for {batch}.",
+                f"1. Perform 5-Whys root cause analysis on batch execution record (BER) for lot {batch}.",
                 f"2. Conduct chemical / physical retain sample testing for {prod}.",
                 "3. Review environmental control logs and equipment calibration parameters."
             ]

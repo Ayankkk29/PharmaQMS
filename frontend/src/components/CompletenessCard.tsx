@@ -39,7 +39,7 @@ export const CompletenessCard: React.FC<CompletenessCardProps> = ({ completeness
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                 is_complete ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-200 text-amber-900'
               }`}>
-                {is_complete ? 'GMP Ready' : 'Follow-up Recommended'}
+                {is_complete ? 'Intake Complete' : 'Follow-up Recommended'}
               </span>
             </div>
             <p className={`text-xs mt-0.5 ${is_complete ? 'text-emerald-800' : 'text-amber-800'}`}>

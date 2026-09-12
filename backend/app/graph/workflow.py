@@ -60,5 +60,5 @@ async def run_complaint_analysis(raw_text: str, input_type: str = "TEXT", existi
         "errors": []
     }
 
-    final_state = complaint_state_graph.invoke(initial_state)
+    final_state = await complaint_state_graph.ainvoke(initial_state)
     return final_state.get("final_output", final_state)

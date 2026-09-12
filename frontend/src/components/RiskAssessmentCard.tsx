@@ -56,7 +56,7 @@ export const RiskAssessmentCard: React.FC<RiskAssessmentCardProps> = ({ risk }) 
 
         {risk.regulatory_reportable && (
           <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
-            <FileWarning className="h-3.5 w-3.5 mr-1 text-rose-600" /> FDA/EMA 15-Day Reportable
+            <FileWarning className="h-3.5 w-3.5 mr-1 text-rose-600" /> Potentially Reportable — QA Review Required
           </span>
         )}
       </div>
