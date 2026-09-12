@@ -1,0 +1,26 @@
+From: quality@abchealthcare.co.in
+To: qms-intake@pharmamanufacturer.com
+Date: Sat, 12 Sep 2026 10:15:00 +0530
+Subject: DEMO ONLY - Customer Complaint Notification: Paracetamol Tablets 500 mg (Batch PCM240731)
+
+SYNTHETIC DEMONSTRATION CUSTOMER COMPLAINT
+(For local system testing only - Not a real pharmaceutical complaint)
+
+Customer Complaint Details:
+----------------------------------------
+Product: Paracetamol Tablets 500 mg
+Product Code: PCM500
+Batch Number: PCM240731
+Market: India
+Customer: ABC Healthcare Distribution
+Complaint Date: 12 September 2026
+
+Description:
+The customer reported that several tablets from Batch PCM240731 appeared discolored compared with previous batches.
+Approximately 15 strips were identified with the issue.
+No adverse event has been reported at this time.
+The customer has retained samples and requested an investigation.
+
+Best Regards,
+Quality Control Manager
+ABC Healthcare Distribution
