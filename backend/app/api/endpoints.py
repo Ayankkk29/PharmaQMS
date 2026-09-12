@@ -63,6 +63,7 @@ async def get_analytics_summary(db: AsyncSession = Depends(get_db)):
 
 # --- File Analysis Router ---
 from app.core.security import validate_uploaded_file
+from app.services.document_parser import extract_text_from_file
 
 @router.post("/complaints/analyze-file")
 async def analyze_file_endpoint(
@@ -72,31 +73,21 @@ async def analyze_file_endpoint(
     contents = await file.read()
     file_ext = validate_uploaded_file(file, contents)
     filename = file.filename or "uploaded_file"
-    extracted_text = ""
 
-    if file_ext == ".pdf":
-        try:
-            pdf_file = io.BytesIO(contents)
-            reader = PdfReader(pdf_file)
-            text_pages = [page.extract_text() for page in reader.pages if page.extract_text()]
-            extracted_text = "\n".join(text_pages)
-        except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, 
-                detail="Failed to parse PDF document. Ensure the PDF is not encrypted or corrupt."
-            )
-    else:
-        try:
-            extracted_text = contents.decode("utf-8", errors="ignore")
-        except Exception:
-            extracted_text = f"Uploaded document file: {filename}"
+    extracted_text = extract_text_from_file(contents, filename, file_ext)
 
-    if not extracted_text.strip():
-        extracted_text = f"Document content from file {filename}"
+    source_type_map = {
+        ".pdf": "PDF_UPLOAD",
+        ".docx": "DOCX_UPLOAD",
+        ".doc": "DOCX_UPLOAD",
+        ".eml": "EMAIL",
+        ".msg": "EMAIL"
+    }
+    source_type = source_type_map.get(file_ext, "FILE_UPLOAD")
 
     result = await analyze_complaint_service(
         db,
         content=extracted_text,
-        source_type="PDF_UPLOAD" if file_ext == ".pdf" else "IMAGE_UPLOAD"
+        source_type=source_type
     )
     return result

@@ -12,6 +12,7 @@ import {
   submitComplaint
 } from '../store/slices/intakeSlice';
 import { fetchComplaints, fetchAnalyticsSummary } from '../store/slices/complaintsSlice';
+import { api } from '../services/api';
 import { IntakeWorkflow } from '../components/intake/IntakeWorkflow';
 import { ComplaintForm } from '../components/intake/ComplaintForm';
 import { AICopilotPanel } from '../components/intake/AICopilotPanel';
@@ -109,27 +110,19 @@ export const IntakePage: React.FC<IntakePageProps> = ({ onSavedSuccess }) => {
     }
   };
 
-  const handleChatSend = (e: React.FormEvent) => {
+  const handleChatSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatQuery.trim()) return;
     const q = chatQuery.trim();
     setChatHistory(prev => [...prev, { sender: 'user', text: q }]);
     setChatQuery('');
 
-    setTimeout(() => {
-      let reply = "I've reviewed the complaint details. ";
-      const qLower = q.toLowerCase();
-      if (qLower.includes('risk') || qLower.includes('rpn')) {
-        reply += analysisResult ? `ICH Q9 Risk Level is ${analysisResult.risk_assessment.risk_level} (RPN: ${analysisResult.risk_assessment.rpn_score}). ${analysisResult.risk_assessment.reasoning}` : "Please upload or analyze a complaint to view the ICH Q9 Risk Matrix.";
-      } else if (qLower.includes('duplicate')) {
-        reply += analysisResult?.duplicate_info?.possible_duplicate ? `Potential duplicate identified (Confidence: ${Math.round((analysisResult.duplicate_info.confidence || 0.8) * 100)}%). Matching records: ${(analysisResult.duplicate_info.matching_complaint_ids || []).join(', ')}.` : "No duplicate complaints detected in the QMS database for this batch.";
-      } else if (qLower.includes('capa') || qLower.includes('containment')) {
-        reply += analysisResult ? `Recommended Containment: ${(analysisResult.capa_recommendations?.immediate_containment || []).join('; ')}.` : "Upload or paste complaint text to generate CAPA recommendations.";
-      } else {
-        reply += `Extracted Product: ${formValues?.product_name_raw || 'Awaiting extraction'}, Batch: ${formValues?.batch_number || 'N/A'}. All extraction parameters are pre-filled on the left panel for human QA verification.`;
-      }
-      setChatHistory(prev => [...prev, { sender: 'ai', text: reply }]);
-    }, 400);
+    try {
+      const res = await api.sendCopilotChat(q, analysisResult, chatHistory);
+      setChatHistory(prev => [...prev, { sender: 'ai', text: res.reply }]);
+    } catch {
+      setChatHistory(prev => [...prev, { sender: 'ai', text: "I've reviewed the complaint details. Please verify extracted parameters on the left form panel." }]);
+    }
   };
 
   return (

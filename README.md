@@ -63,7 +63,13 @@ During technical interviews, the following architectural choices can be explicit
 4. **Modular React Component Hierarchy**:
    - Refactored `IntakePage.tsx` into decoupled sub-components (`IntakeWorkflow`, `ComplaintForm`, `AICopilotPanel`) for clean separation of concerns and maintainability.
 
-5. **Demo & Development Resilience Fallback**:
+5. **Multi-Format Document Parsing Engine**:
+   - High-fidelity extraction supporting **PDF** (`pypdf`), **DOCX** (`python-docx`), **EML** (`email.message_from_bytes`), and **TXT** (`utf-8`). Ensures structured entity extraction across emails, batch records, customer letters, and word documents.
+
+6. **Grounded AI Copilot LLM Chat Endpoint (`POST /api/v1/ai/copilot-chat`)**:
+   - Interactive Q&A copilot powered by Groq LLM (`gemma2-9b-it`) grounded directly in extracted complaint context, risk scores, and CAPA recommendations, with zero key exposure and intelligent fallback.
+
+7. **Demo & Development Resilience Fallback**:
    - Uses PostgreSQL for primary persistence with an automatic zero-config SQLite fallback for local evaluation and demonstration without database setup overhead.
 
 ---
@@ -93,10 +99,12 @@ pharma-complaint-system/
 │   │   ├── schemas/
 │   │   │   └── complaint.py          # Pydantic v2 validation models
 │   │   ├── services/
-│   │   │   ├── ai_service.py         # ICH Q9 Quality Risk matrix & duplicate detection
-│   │   │   └── complaint_service.py  # Complaint creation & DB persistence service
+│   │   │   ├── ai_service.py         # ICH Q9 Quality Risk matrix & LLM Copilot Chat
+│   │   │   ├── complaint_service.py  # Complaint creation & DB persistence service
+│   │   │   └── document_parser.py    # Multi-format document engine (PDF, DOCX, EML, TXT)
 │   │   └── main.py                   # FastAPI app entry point & security middleware
-│   ├── samples/                      # Demonstration test documents (PDF, EML, TXT)
+│   ├── samples/                      # Demonstration test documents (PDF, EML, TXT, DOCX)
+│   ├── test_multi_format_parser.py   # Multi-format parser & LLM Copilot Chat test script
 │   ├── test_e2e_workflow.py          # 21-step E2E integration test script
 │   ├── test_qa_suite.py              # 18-scenario automated QA test suite
 │   ├── test_security_audit.py        # 7-check security & vulnerability test suite
@@ -199,13 +207,16 @@ Execute the built-in test suites from the `backend` directory:
 ```bash
 cd backend
 
-# 1. Run 21-Step End-to-End Workflow Integration Test
+# 1. Run Multi-Format Document Parsing & LLM Copilot Chat Test
+python test_multi_format_parser.py
+
+# 2. Run 21-Step End-to-End Workflow Integration Test
 python test_e2e_workflow.py
 
-# 2. Run 18-Scenario Senior QA Engineering Test Suite
+# 3. Run 18-Scenario Senior QA Engineering Test Suite
 python test_qa_suite.py
 
-# 3. Run 7-Check Security & Vulnerability Test Suite
+# 4. Run 7-Check Security & Vulnerability Test Suite
 python test_security_audit.py
 ```
 

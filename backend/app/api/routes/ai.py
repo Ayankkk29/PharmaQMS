@@ -8,12 +8,15 @@ from app.schemas.complaint import (
     CompletenessRequestSchema,
     CompletenessResponseSchema,
     DuplicateCheckRequestSchema,
-    DuplicateCheckResponseSchema
+    DuplicateCheckResponseSchema,
+    CopilotChatRequestSchema,
+    CopilotChatResponseSchema
 )
 from app.services.ai_service import (
     calculate_risk_assessment,
     evaluate_completeness,
-    check_duplicates
+    check_duplicates,
+    generate_copilot_chat_response
 )
 
 router = APIRouter(prefix="/ai", tags=["AI Copilot Services"])
@@ -43,3 +46,12 @@ async def post_duplicate_check(
         product_name=payload.product_name,
         defect_description=payload.defect_description
     )
+
+@router.post("/copilot-chat", response_model=CopilotChatResponseSchema, status_code=status.HTTP_200_OK)
+async def post_copilot_chat(payload: CopilotChatRequestSchema):
+    result = await generate_copilot_chat_response(
+        query=payload.query,
+        complaint_context=payload.complaint_context,
+        chat_history=payload.chat_history
+    )
+    return CopilotChatResponseSchema(**result)

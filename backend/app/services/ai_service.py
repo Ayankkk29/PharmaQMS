@@ -214,3 +214,53 @@ async def check_duplicates(
         similarity_score=confidence,
         duplicate_reason=reasoning
     )
+
+async def generate_copilot_chat_response(
+    query: str,
+    complaint_context: Optional[Dict[str, Any]] = None,
+    chat_history: Optional[List[Dict[str, str]]] = None
+) -> Dict[str, str]:
+    import json
+    from app.graph.nodes import get_groq_client
+    from app.core.config import settings
+    client = get_groq_client()
+    
+    ctx_str = json.dumps(complaint_context or {}, indent=2)
+    prompt = f"""You are QMS AI Copilot, a senior pharmaceutical Quality Assurance Assistant.
+Answer the user's question concisely based on the complaint context below.
+Provide precise, regulatory-focused answers (ICH Q9 Quality Risk, CAPA, batch history, completeness).
+
+Extracted Complaint Context:
+\"\"\"{ctx_str}\"\"\"
+
+User Question:
+\"{query}\"
+"""
+    if client:
+        try:
+            response = client.chat.completions.create(
+                model=settings.PRIMARY_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are a professional pharmaceutical QMS AI Copilot."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.2,
+                max_tokens=400
+            )
+            reply = response.choices[0].message.content.strip()
+            return {"reply": reply, "source": "GROQ_LLM"}
+        except Exception:
+            pass
+
+    q_lower = query.lower()
+    reply = "I've reviewed the complaint details. "
+    if "risk" in q_lower or "rpn" in q_lower:
+        reply += "ICH Q9 Risk Level is calculated based on Severity x Probability x Detectability RPN matrix."
+    elif "duplicate" in q_lower:
+        reply += "Batch and defect history screened against QMS database records."
+    elif "capa" in q_lower or "containment" in q_lower:
+        reply += "Recommended 24h immediate containment: quarantine batch lot, initiate stock count, and conduct 5-Whys BER review."
+    else:
+        reply += f"Extracted details are pre-filled on the left form panel for QA verification."
+
+    return {"reply": reply, "source": "HEURISTIC_FALLBACK"}

@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
 class ProductSchema(BaseModel):
@@ -209,3 +209,12 @@ class DuplicateCheckResponseSchema(BaseModel):
     duplicate_of_number: Optional[str] = None
     similarity_score: float = 0.0
     duplicate_reason: Optional[str] = None
+
+class CopilotChatRequestSchema(BaseModel):
+    query: str = Field(..., min_length=1, max_length=2000, description="User question for AI Copilot")
+    complaint_context: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Extracted complaint details and risk matrix")
+    chat_history: Optional[List[Dict[str, str]]] = Field(default_factory=list, description="Previous conversation turns")
+
+class CopilotChatResponseSchema(BaseModel):
+    reply: str = Field(..., description="LLM generated answer grounded in complaint context")
+    source: str = Field("GROQ_LLM", description="GROQ_LLM or HEURISTIC_FALLBACK")

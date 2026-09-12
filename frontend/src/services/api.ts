@@ -59,5 +59,15 @@ export const api = {
   async getAnalyticsSummary(): Promise<AnalyticsSummary> {
     const res = await axios.get(`${API_BASE}/analytics/summary`);
     return res.data;
+  },
+
+  // Send AI Copilot Chat Query (Real Groq LLM endpoint)
+  async sendCopilotChat(query: string, complaintContext?: any, chatHistory?: any[]): Promise<{ reply: string; source: string }> {
+    const res = await axios.post(`${API_BASE}/ai/copilot-chat`, {
+      query,
+      complaint_context: complaintContext,
+      chat_history: chatHistory,
+    });
+    return res.data;
   }
 };
