@@ -33,39 +33,7 @@ export const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1">
-            <button
-              onClick={() => dispatch(setActiveNavTab('dashboard'))}
-              className={`px-3 py-1 rounded-md text-xs font-semibold transition ${
-                activeNavTab === 'dashboard'
-                  ? 'bg-slate-800 text-sky-400 border border-slate-700'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => dispatch(setActiveNavTab('log'))}
-              className={`px-3 py-1 rounded-md text-xs font-semibold transition ${
-                activeNavTab === 'log'
-                  ? 'bg-slate-800 text-sky-400 border border-slate-700'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              Log Customer Complaint
-            </button>
-            <button
-              onClick={() => dispatch(setActiveNavTab('list'))}
-              className={`px-3 py-1 rounded-md text-xs font-semibold transition ${
-                activeNavTab === 'list'
-                  ? 'bg-slate-800 text-sky-400 border border-slate-700'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              Complaint Register
-            </button>
-          </nav>
+
 
           {/* Quick Search */}
           <div className="hidden lg:flex items-center flex-1 max-w-xs mx-6">

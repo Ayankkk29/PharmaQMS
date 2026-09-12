@@ -20,29 +20,29 @@ export const CompletenessCard: React.FC<CompletenessCardProps> = ({ completeness
     }`}>
       
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-start space-x-3 min-w-0 flex-1">
           {is_complete ? (
-            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700">
-              <CheckCircle2 className="h-6 w-6 flex-shrink-0" />
+            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0 mt-0.5 sm:mt-0">
+              <CheckCircle2 className="h-5 w-5" />
             </div>
           ) : (
-            <div className="p-2 rounded-lg bg-amber-100 text-amber-700">
-              <AlertTriangle className="h-6 w-6 flex-shrink-0" />
+            <div className="p-2 rounded-lg bg-amber-100 text-amber-700 shrink-0 mt-0.5 sm:mt-0">
+              <AlertTriangle className="h-5 w-5" />
             </div>
           )}
-          <div>
-            <div className="flex items-center space-x-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
               <h4 className={`font-bold text-sm ${is_complete ? 'text-emerald-950' : 'text-amber-950'}`}>
-                {is_complete ? '⭐ Complaint Information Complete' : '⭐ Missing Information Detected'}
+                {is_complete ? '⭐ Complaint Information Complete' : '⭐ Missing Information'}
               </h4>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded whitespace-nowrap ${
                 is_complete ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-200 text-amber-900'
               }`}>
                 {is_complete ? 'Intake Complete' : 'Follow-up Recommended'}
               </span>
             </div>
-            <p className={`text-xs mt-0.5 ${is_complete ? 'text-emerald-800' : 'text-amber-800'}`}>
+            <p className={`text-xs mt-1 ${is_complete ? 'text-emerald-800' : 'text-amber-800'}`}>
               {is_complete
                 ? 'All mandatory regulatory intake fields are present.'
                 : `${missing_fields.length} key processing field(s) require complainant follow-up.`}
@@ -51,8 +51,8 @@ export const CompletenessCard: React.FC<CompletenessCardProps> = ({ completeness
         </div>
 
         {/* Score Percentage Gauge */}
-        <div className="text-right bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-xs">
-          <span className={`text-2xl font-black ${is_complete ? 'text-emerald-700' : 'text-amber-700'}`}>
+        <div className="text-right bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-xs shrink-0 self-end sm:self-center">
+          <span className={`text-xl sm:text-2xl font-black ${is_complete ? 'text-emerald-700' : 'text-amber-700'}`}>
             {score}%
           </span>
           <p className="text-[9px] text-slate-500 uppercase tracking-wider font-extrabold block">Completeness</p>
@@ -75,12 +75,12 @@ export const CompletenessCard: React.FC<CompletenessCardProps> = ({ completeness
 
       {/* Missing Field Badges */}
       {!is_complete && missing_fields.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-amber-200/60 flex items-center justify-between">
-          <div className="flex flex-wrap gap-1.5">
+        <div className="mt-3 pt-3 border-t border-amber-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
             {missing_fields.map((field) => (
               <span
                 key={field}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300"
+                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100 text-amber-900 border border-amber-300"
               >
                 Missing: {field.replace('_', ' ')}
               </span>
@@ -91,7 +91,7 @@ export const CompletenessCard: React.FC<CompletenessCardProps> = ({ completeness
             <button
               type="button"
               onClick={() => setShowQuestions(!showQuestions)}
-              className="text-xs font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1 bg-white px-3 py-1 rounded border border-slate-200 shadow-xs transition"
+              className="text-xs font-bold text-sky-700 hover:text-sky-900 flex items-center justify-center gap-1 bg-white px-3 py-1 rounded border border-slate-200 shadow-xs transition shrink-0 self-start sm:self-auto"
             >
               <HelpCircle className="h-3.5 w-3.5 text-sky-600" />
               <span>{questions.length} Follow-up Questions</span>
